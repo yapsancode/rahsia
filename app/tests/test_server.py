@@ -3,7 +3,7 @@ import time
 import pytest
 from fastapi.testclient import TestClient
 
-from app import engine, server
+from app import engine_standin as engine, server
 from profile_builder.builder import BuildResult
 from profile_builder.schema import Profile
 
@@ -14,6 +14,7 @@ PROFILE = {"side": "seeker", "intent": "funding", "stage": ["seed"], "sector": [
 
 @pytest.fixture
 def client(tmp_path, monkeypatch):
+    monkeypatch.setattr(server, "engine", engine)
     monkeypatch.setattr(engine, "_folder", tmp_path)
     monkeypatch.setattr(engine, "RECEIPTS", tmp_path / "receipts")
     monkeypatch.setattr(server.client, "model_state", lambda model: "ready")

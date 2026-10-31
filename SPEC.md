@@ -16,8 +16,8 @@
 
 ## Phase 2 — Hack day sprint, 31 Oct 11:00-15:00 (current)
 - [x] Profile builder: notes in, schema-checked JSON out (`profile_builder/`, first version; not yet scored, no answer key exists)
-- [ ] Private match check on bucketed fields
-- [x] Two-role screen (seeker, provider): `app/`, six steps, tested with Gemma; waits for the real match engine
+- [x] Private match check on bucketed fields: OpenMined PSI, two copies on one laptop pass; two-laptop test still to do
+- [x] Two-role screen (seeker, provider): `app/`, six steps, tested with Gemma; runs on the PSI engine
 - [x] Draft generator using only the shared overlap (`profile_builder/draft.py`, first version; not yet scored). It also writes a first-call agenda
 - [x] Notes can come from a file: text files, `.pdf`, `.docx` (`app/reader.py`)
 - [ ] Disclosure receipt (hash, time, signature)
@@ -44,3 +44,4 @@
 - 2026-10-31: run all Gemma layers on the GPU (`num_gpu` 99) and return one-line JSON. Checked on Isyraf's laptop (GTX 1650, 4 GB) on 2026-10-31, on 3 fake notes: a profile went from about 21 seconds to about 3 to 4, and a draft with agenda takes about 2 to 4. It uses 3.8 GB of the 4 GB, so a smaller GPU falls back to Ollama's own split. The teammate's laptop is unverified. The app loads Gemma when it starts, because a cold load takes about 32 seconds.
 - 2026-10-31: after both agree, the app gives a first-call agenda as well as the draft, because Isyraf wanted more than a message. Both use only the overlap.
 - 2026-10-31: profile builder output follows the Shared fields in TASKS.md (Isyraf approved the fix). Money buckets are computed in code. Injection text is removed before the model reads the notes, and a value is kept only if words in the notes support it, because in testing Gemma obeyed an injection and filled blank fields even with prompt rules against both.
+- 2026-10-31: PSI library is OpenMined `openmined.psi` 2.0.6 (Teammate's pick, plugged into `app/engine.py` by Isyraf). It has no Windows build, so on Windows the maths runs in WSL (`app/psi_worker.py`) and the engine talks to it over a pipe; laptops talk over plain TCP on port 47321. Match = shared token per combination of intent, stage, sector, money, geography. Two rounds, one each way. After both agree, two more rounds reveal only the shared values. Limits are in README.
