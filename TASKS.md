@@ -1,6 +1,6 @@
 # Rahsia team tasks
 
-2026-10-31 · Hack day. We submit by 14:45, 15 minutes before the 15:00 deadline. Find your name, follow your list in order, and tick each box when it is done. Isyraf builds the Gemma profile builder and looks after `main`.
+2026-10-31 · Hack day. We submit by 14:45, 15 minutes before the 15:00 deadline. Find your name, follow your list in order, and tick each box when it is done. Isyraf builds the Gemma profile builder, the draft and the app screens, and looks after `main`.
 
 ## Rules for everyone
 
@@ -139,6 +139,8 @@ Isyraf will run Gemma and send you the results. Add them in new tabs, and leave 
 ## Experienced teammate: match check, laptop link and receipt
 
 You build everything that happens after a clean profile exists. Your input is the profile JSON below, and your output is match or no match, the receipt, and the leakage number. PSI is the biggest technical risk, so start it first.
+
+**Plugging into the screens:** the app in `app/` already calls `app/engine.py`. Today that file is a stand-in and it is not private. Keep its function names (`run_match`, `reveal_overlap`, `decline`, `save_receipt`, `reset`) and what they return, then set `ENGINE_PRIVATE` and `ENGINE_SIGNED` to `True`. The screens then change by themselves.
 
 ```json
 {

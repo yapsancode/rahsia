@@ -36,9 +36,9 @@ This is a hack-day build. Update this table as parts land.
 |---|---|
 | Profile builder (`profile_builder/`) | In progress |
 | Private match check (PSI) | Not started |
-| Two-role screen | Not started |
-| Draft generator | Not started |
-| Disclosure receipt | Not started |
+| Two-role screen (`app/`) | First version, runs on a stand-in match engine |
+| Draft generator | First version, not yet scored |
+| Disclosure receipt | Stand-in: hashed, not signed yet |
 | Landing page (`site/`) | Done |
 
 ## Run it
@@ -49,7 +49,18 @@ This is a hack-day build. Update this table as parts land.
 - [Ollama](https://ollama.com) running on the same laptop
 - Gemma 4 E4B pulled once: `ollama pull gemma4:e4b` (6.6 GB on disk, download before the event)
 
-### Profile builder
+### The app
+
+```bash
+python -m venv .venv
+.venv\Scripts\activate          # Windows. On macOS or Linux: source .venv/bin/activate
+pip install -r app/requirements.txt
+python -m app --port 8001 --open
+```
+
+Each person runs their own copy. To try both sides on one laptop, run a second copy with `--port 8002` and pick the other side. The match step uses a stand-in in `app/engine.py` until the PSI engine is plugged in. **The stand-in is not private**, and the screens say so.
+
+### Profile builder only
 
 ```bash
 python -m venv .venv
@@ -67,7 +78,7 @@ Useful options:
 - `--model` picks another Ollama model (default `gemma4:e4b`).
 - `--yes` marks the profile as reviewed without asking.
 
-Run the tests with `python -m pytest profile_builder/tests`.
+Run the tests with `python -m pytest`.
 
 The repo uses fake data only. Do not put real people, real pitch decks or real investor data in it.
 
@@ -84,7 +95,8 @@ The repo uses fake data only. Do not put real people, real pitch decks or real i
 
 | Path | What it is |
 |---|---|
-| `profile_builder/` | Notes to checked profile JSON, using Gemma 4 through a local Ollama server |
+| `app/` | The six-step app: a local server and the screens. `app/engine.py` is the plug for the match engine |
+| `profile_builder/` | Notes to checked profile JSON, and the intro draft, using Gemma 4 through a local Ollama server |
 | `site/` | Public landing page (Astro, Cloudflare) |
 | `IDEA.md` | The full idea, demo plan, numbers and limits |
 | `SPEC.md` | Plan and decisions |
