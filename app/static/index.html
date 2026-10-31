@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Rahsia</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+  <a class="skip" href="#main">Skip to the main content</a>
+
+  <aside class="rail" aria-label="Progress and status">
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" fill="#d92b21"/><rect x="6" y="6" width="20" height="20" fill="none" stroke="#fff" stroke-width="3"/><rect x="13" y="13" width="6" height="6" fill="#fff"/></svg>
+      <span class="brand-name">Rahsia</span>
+    </div>
+    <p class="who" id="who">Not set up yet</p>
+
+    <ol class="steps" id="steps">
+      <li><span class="tick">1</span><span>Notes</span></li>
+      <li><span class="tick">2</span><span>Profile</span></li>
+      <li><span class="tick">3</span><span id="step-match">Match check</span></li>
+      <li><span class="tick">4</span><span>Both agree</span></li>
+      <li><span class="tick">5</span><span>Draft</span></li>
+      <li><span class="tick">6</span><span>Receipt</span></li>
+    </ol>
+
+    <dl class="status">
+      <div><dt>AI</dt><dd id="st-gemma">Checking…</dd></div>
+      <div><dt>Runs on</dt><dd>This laptop</dd></div>
+      <div><dt>Match</dt><dd id="st-engine">Checking…</dd></div>
+    </dl>
+    <p class="fake">Demo uses fake data.</p>
+  </aside>
+
+  <main class="stage" id="main" tabindex="-1">
+
+    <section class="screen" id="s-side" aria-labelledby="h-side">
+      <p class="eyebrow">Before you start</p>
+      <h1 id="h-side">Who is using this laptop?</h1>
+      <p class="lead">Your notes stay here. The other side runs their own copy on their own laptop.</p>
+      <div class="sides">
+        <button class="side-card" data-side="seeker" type="button">
+          <span class="side-label">Seeker</span>
+          <strong>I am a startup</strong>
+          <span class="side-text">Looking for funding, a partner or a mentor.</span>
+          <svg class="arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+        </button>
+        <button class="side-card" data-side="provider" type="button">
+          <span class="side-label">Provider</span>
+          <strong>I am an investor</strong>
+          <span class="side-text">Looking to invest, partner, mentor or hire a team.</span>
+          <svg class="arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+        </button>
+      </div>
+    </section>
+
+    <section class="screen" id="s-notes" aria-labelledby="h-notes" hidden>
+      <p class="eyebrow">Step 1</p>
+      <h1 id="h-notes">Write it the way you would say it.</h1>
+      <p class="lead">English, Malay or mixed. Messy is fine. Gemma reads it on this laptop.</p>
+      <div class="field-wrap">
+        <label class="label" for="notes">Your notes</label>
+        <div class="scanbox" id="scanbox">
+          <textarea id="notes" rows="8" spellcheck="false"></textarea>
+          <span class="scan" aria-hidden="true"></span>
+        </div>
+        <p class="error" id="notes-error" role="alert" hidden></p>
+      </div>
+      <div class="actions">
+        <button class="btn primary" id="build" type="button">
+          <span id="build-label">Build profile</span>
+          <svg class="arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+        </button>
+        <div class="samples" id="samples"></div>
+      </div>
+    </section>
+
+    <section class="screen" id="s-profile" aria-labelledby="h-profile" hidden>
+      <p class="eyebrow">Step 2</p>
+      <h1 id="h-profile">Check your profile.</h1>
+      <p class="lead" id="profile-lead"></p>
+      <div class="callout danger" id="injection" role="status" hidden>
+        <strong>Instruction removed</strong>
+        <p id="injection-text"></p>
+      </div>
+      <div class="review">
+        <aside class="source">
+          <p class="label">What you wrote</p>
+          <p class="source-text" id="source-text"></p>
+          <details class="checks" id="checks" hidden>
+            <summary id="checks-title"></summary>
+            <ul id="checks-list"></ul>
+          </details>
+        </aside>
+        <form class="form" id="form"></form>
+      </div>
+      <p class="error" id="profile-error" role="alert" hidden></p>
+      <div class="actions">
+        <button class="btn primary" id="confirm" type="button">
+          <span>This is correct</span>
+          <svg class="arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+        </button>
+        <button class="btn" id="back-notes" type="button">Back to notes</button>
+      </div>
+    </section>
+
+    <section class="screen" id="s-match" aria-labelledby="h-match" hidden>
+      <p class="eyebrow" id="match-eyebrow">Step 3</p>
+      <h1 id="h-match" aria-live="polite">Checking with the other laptop</h1>
+      <p class="lead" id="match-lead"></p>
+
+      <div class="vault" id="vault" aria-hidden="true">
+        <div class="sq a"><span id="sq-you">You</span></div>
+        <div class="sq b"><span id="sq-them">Them</span></div>
+        <div class="ov"></div>
+      </div>
+
+      <div class="callout" id="stand-in" role="note" hidden>
+        <strong>Not private yet</strong>
+        <p>This is a stand-in, so the screens can be tested. It works on one laptop with fake data. The real PSI engine plugs in here.</p>
+      </div>
+
+      <div class="zero" id="zero" hidden>
+        <span class="zero-num">0</span>
+        <span class="zero-text">fields shared</span>
+      </div>
+
+      <p class="error" id="match-error" role="alert" hidden></p>
+      <div class="actions" id="match-actions"></div>
+    </section>
+
+    <section class="screen" id="s-share" aria-labelledby="h-share" hidden>
+      <p class="eyebrow">Step 5</p>
+      <h1 id="h-share">Only the overlap.</h1>
+      <p class="lead">Both sides agreed. This is everything that was shared, and the draft uses nothing else.</p>
+      <div class="share">
+        <div>
+          <p class="label" id="overlap-count"></p>
+          <div class="overlap" id="overlap"></div>
+        </div>
+        <div>
+          <label class="label" for="draft">Draft intro</label>
+          <div class="scanbox" id="draft-box">
+            <textarea id="draft" rows="7"></textarea>
+            <span class="scan" aria-hidden="true"></span>
+          </div>
+          <p class="hint" id="draft-hint" aria-live="polite"></p>
+        </div>
+      </div>
+      <p class="error" id="share-error" role="alert" hidden></p>
+      <div class="actions">
+        <button class="btn primary" id="save-receipt" type="button">
+          <span>Save receipt</span>
+          <svg class="arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+        </button>
+        <button class="btn" id="copy-draft" type="button">Copy draft</button>
+      </div>
+    </section>
+
+    <section class="screen" id="s-receipt" aria-labelledby="h-receipt" hidden>
+      <p class="eyebrow">Step 6</p>
+      <h1 id="h-receipt">Receipt saved.</h1>
+      <p class="lead">A record of what was shared, kept on this laptop. It is evidence, not a legal contract.</p>
+      <article class="paper">
+        <header class="paper-head">
+          <svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" fill="#d92b21"/><rect x="6" y="6" width="20" height="20" fill="none" stroke="#fff" stroke-width="3"/><rect x="13" y="13" width="6" height="6" fill="#fff"/></svg>
+          <span>Disclosure receipt</span>
+          <span class="tag" id="r-signed"></span>
+        </header>
+        <dl class="paper-rows" id="receipt-rows"></dl>
+      </article>
+      <div class="actions">
+        <button class="btn primary" id="again" type="button">Start a new check</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

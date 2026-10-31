@@ -24,6 +24,8 @@ def _server(calls):
     class Handler(http.server.BaseHTTPRequestHandler):
         def do_POST(self):
             calls.append(self.path)
+            # Read the body first: on Windows, closing with unread data aborts the connection.
+            self.rfile.read(int(self.headers["Content-Length"]))
             self.send_response(200)
             self.end_headers()
             self.wfile.write(b'{"message": {"content": "ok"}}')

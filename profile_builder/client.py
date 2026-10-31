@@ -28,6 +28,16 @@ def runner_url() -> str:
     return f"{parsed.scheme}://{parsed.hostname if parsed.hostname != '::1' else '[::1]'}:{parsed.port or 11434}"
 
 
+def has_model(model: str) -> bool:
+    """True if the local runner is up and has this model. Never raises."""
+    try:
+        with _NO_PROXY.open(runner_url() + "/api/tags", timeout=2) as response:
+            names = [m.get("name") for m in json.load(response).get("models", [])]
+    except (RunnerError, OSError, ValueError):
+        return False
+    return model in names
+
+
 def chat(model: str, system: str, user: str, schema: dict, seed: int = 0,
          temperature: float = 0.0, timeout: float = 120.0) -> str:
     """One request, schema-constrained JSON back as text."""
