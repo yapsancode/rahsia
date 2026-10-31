@@ -479,6 +479,38 @@ textarea {
   }
 }
 
+.label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.label-row .label {
+  margin-bottom: 0;
+}
+
+.drop {
+  position: absolute;
+  inset: 0;
+  display: none;
+  place-items: center;
+  border: 3px solid var(--accent);
+  background: var(--bg);
+  color: var(--accent-text);
+  font-size: 1.25rem;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+.scanbox.dragging .drop {
+  display: grid;
+}
+
+.agenda-label {
+  margin-top: 16px;
+}
+
 .samples {
   display: flex;
   flex-wrap: wrap;

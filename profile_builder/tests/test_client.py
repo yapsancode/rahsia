@@ -1,8 +1,10 @@
 import http.server
+import json
 import threading
 
 import pytest
 
+from profile_builder import client
 from profile_builder.client import RunnerError, chat, runner_url
 
 
@@ -36,6 +38,51 @@ def _server(calls):
     server = http.server.HTTPServer(("127.0.0.1", 0), Handler)
     threading.Thread(target=server.serve_forever, daemon=True).start()
     return server
+
+
+def _small_gpu_server(bodies):
+    """Refuses a request for the full GPU, as Ollama does when the model will not fit."""
+    class Handler(http.server.BaseHTTPRequestHandler):
+        def do_POST(self):
+            body = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
+            bodies.append(body)
+            self.send_response(500 if "num_gpu" in body["options"] else 200)
+            self.end_headers()
+            self.wfile.write(b'{"message": {"content": "ok"}}')
+
+        def log_message(self, *args):
+            pass
+
+    server = http.server.HTTPServer(("127.0.0.1", 0), Handler)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    return server
+
+
+def test_a_small_gpu_falls_back_once_and_stays_there(monkeypatch):
+    bodies = []
+    server = _small_gpu_server(bodies)
+    monkeypatch.setenv("OLLAMA_HOST", f"127.0.0.1:{server.server_port}")
+    monkeypatch.setattr(client, "_full_gpu", True)
+    try:
+        assert chat("m", "s", "u", {}) == "ok"
+        assert chat("m", "s", "u", {}) == "ok"
+    finally:
+        server.shutdown()
+    assert ["num_gpu" in body["options"] for body in bodies] == [True, False, False]
+
+
+def test_every_call_sends_the_same_loading_options(monkeypatch):
+    bodies = []
+    server = _small_gpu_server(bodies)
+    monkeypatch.setenv("OLLAMA_HOST", f"127.0.0.1:{server.server_port}")
+    monkeypatch.setattr(client, "_full_gpu", False)
+    try:
+        client.warm_up("m")
+        chat("m", "s", "u", {})
+    finally:
+        server.shutdown()
+    assert bodies[0]["options"]["num_ctx"] == bodies[1]["options"]["num_ctx"]
+    assert bodies[0]["keep_alive"] == bodies[1]["keep_alive"]
 
 
 def test_a_proxy_setting_is_ignored(monkeypatch):

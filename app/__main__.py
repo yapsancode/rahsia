@@ -8,6 +8,9 @@ import webbrowser
 
 import uvicorn
 
+from profile_builder.builder import DEFAULT_MODEL
+from profile_builder.client import warm_up
+
 HOST = "127.0.0.1"
 
 
@@ -19,6 +22,7 @@ def main() -> None:
 
     if args.open:
         threading.Timer(1.0, webbrowser.open, [f"http://{HOST}:{args.port}"]).start()
+    threading.Thread(target=warm_up, args=[DEFAULT_MODEL], daemon=True).start()
     print(f"Rahsia is running at http://{HOST}:{args.port}")
     uvicorn.run("app.server:app", host=HOST, port=args.port, log_level="warning")
 

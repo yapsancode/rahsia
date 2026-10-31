@@ -61,11 +61,17 @@
       <h1 id="h-notes">Write it the way you would say it.</h1>
       <p class="lead">English, Malay or mixed. Messy is fine. Gemma reads it on this laptop.</p>
       <div class="field-wrap">
-        <label class="label" for="notes">Your notes</label>
+        <div class="label-row">
+          <label class="label" for="notes">Your notes</label>
+          <button class="link" id="pick-file" type="button">Upload a file</button>
+          <input id="file" type="file" hidden />
+        </div>
         <div class="scanbox" id="scanbox">
           <textarea id="notes" rows="8" spellcheck="false"></textarea>
           <span class="scan" aria-hidden="true"></span>
+          <span class="drop" aria-hidden="true">Drop the file here</span>
         </div>
+        <p class="hint" id="notes-hint" aria-live="polite">Or drop a .txt, .md, .pdf or .docx file on the box.</p>
         <p class="error" id="notes-error" role="alert" hidden></p>
       </div>
       <div class="actions">
@@ -134,7 +140,7 @@
     <section class="screen" id="s-share" aria-labelledby="h-share" hidden>
       <p class="eyebrow">Step 5</p>
       <h1 id="h-share">Only the overlap.</h1>
-      <p class="lead">Both sides agreed. This is everything that was shared, and the draft uses nothing else.</p>
+      <p class="lead">Both sides agreed. This is everything that was shared. The draft and the agenda use nothing else.</p>
       <div class="share">
         <div>
           <p class="label" id="overlap-count"></p>
@@ -143,7 +149,12 @@
         <div>
           <label class="label" for="draft">Draft intro</label>
           <div class="scanbox" id="draft-box">
-            <textarea id="draft" rows="7"></textarea>
+            <textarea id="draft" rows="5"></textarea>
+            <span class="scan" aria-hidden="true"></span>
+          </div>
+          <label class="label agenda-label" for="agenda">Agenda for the first call</label>
+          <div class="scanbox" id="agenda-box">
+            <textarea id="agenda" rows="5"></textarea>
             <span class="scan" aria-hidden="true"></span>
           </div>
           <p class="hint" id="draft-hint" aria-live="polite"></p>
@@ -155,7 +166,7 @@
           <span>Save receipt</span>
           <svg class="arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
         </button>
-        <button class="btn" id="copy-draft" type="button">Copy draft</button>
+        <button class="btn" id="copy-draft" type="button">Copy draft and agenda</button>
       </div>
     </section>
 

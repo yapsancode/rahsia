@@ -8,19 +8,20 @@ import threading
 from dataclasses import dataclass
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.concurrency import run_in_threadpool
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ValidationError
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from profile_builder import client, schema
-from profile_builder.builder import DEFAULT_MODEL, build_profile
+from profile_builder.builder import DEFAULT_MODEL, MAX_NOTES_CHARS, build_profile
 from profile_builder.client import RunnerError
 from profile_builder.draft import build_draft
 from profile_builder.schema import Profile, Side
 
 from . import engine
+from .reader import MAX_BYTES, FileError, read_file
 
 ROOT = Path(__file__).resolve().parent
 SAMPLES = ROOT.parent / "profile_builder" / "samples"
@@ -85,14 +86,27 @@ def _samples() -> dict[str, list[dict]]:
 def config():
     return {
         "model": DEFAULT_MODEL,
-        "gemma_ready": client.has_model(DEFAULT_MODEL),
         "engine": {"name": engine.ENGINE_NAME, "private": engine.ENGINE_PRIVATE, "signed": engine.ENGINE_SIGNED},
         "choices": {"seeker_intent": schema.SEEKER_INTENTS, "provider_intent": schema.PROVIDER_INTENTS,
                     "stage": schema.STAGES, "sector": schema.SECTORS, "money_rm": schema.MONEY_BUCKETS,
                     "geography": schema.GEOGRAPHIES},
-        "limits": {"text": schema.MAX_TEXT_CHARS},
+        "limits": {"text": schema.MAX_TEXT_CHARS, "notes": MAX_NOTES_CHARS, "file_bytes": MAX_BYTES},
         "samples": _samples(),
     }
+
+
+@app.get("/api/gemma")
+def gemma_state():
+    return {"state": client.model_state(DEFAULT_MODEL)}
+
+
+@app.post("/api/read")
+async def read_notes_file(request: Request, x_file_kind: str = Header("")):
+    """The file arrives as the raw body. Only its ending is sent, not its name."""
+    try:
+        return {"text": await run_in_threadpool(read_file, x_file_kind, await request.body())}
+    except FileError as error:
+        raise HTTPException(422, str(error))
 
 
 @app.post("/api/profile")
@@ -159,7 +173,8 @@ async def draft():
         result = await run_in_threadpool(build_draft, round_now.overlap, round_now.profile["side"])
     except RunnerError as error:
         raise HTTPException(503, f"Gemma is not reachable. Start Ollama, then try again. ({error})")
-    return {"text": result.text, "source": result.source, "warnings": result.warnings,
+    return {"text": result.text, "source": result.source, "agenda": result.agenda,
+            "agenda_source": result.agenda_source, "warnings": result.warnings,
             "seconds": result.seconds, "model": result.model}
 
 
