@@ -3,7 +3,7 @@
 Private matchmaking for startups and investors on local Gemma 4. Idea stage. Read IDEA.md and SPEC.md before any work. Work only on the current phase in SPEC.md.
 
 ## Stack
-Chosen (2026-10-31): profile builder in Python 3.11 with pydantic, Gemma 4 E4B through Ollama on localhost (`profile_builder/`, venv in `.venv/`, tests with `pytest`). Web UI: local FastAPI server with plain HTML, CSS and JS (`app/`), no CDN, because the demo runs offline. Still open: PSI library, 12B model. Do not pick those without asking.
+Chosen (2026-10-31): profile builder in Python 3.11 with pydantic, Gemma 4 E4B through Ollama on localhost (`profile_builder/`, venv in `.venv/`, tests with `pytest`). Web UI: local FastAPI server with plain HTML, CSS and JS (`app/`), no CDN, because the demo runs offline. PSI library chosen (2026-10-31): OpenMined `openmined.psi` 2.0.6, run in WSL on Windows (`app/psi_worker.py`). Still open: 12B model. Do not pick that without asking.
 
 ## Claims (strict)
 - Never write or say that Rahsia stops idea theft. It reduces early sharing and records what was shared.

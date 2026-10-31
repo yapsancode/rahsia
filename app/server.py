@@ -4,6 +4,7 @@ One copy runs per laptop for one person, so one round of state lives in memory.
 The match runs in a thread and the page asks for the state, because a match
 waits for the other laptop.
 """
+import os
 import threading
 from dataclasses import dataclass
 from pathlib import Path
@@ -20,8 +21,12 @@ from profile_builder.client import RunnerError
 from profile_builder.draft import build_draft
 from profile_builder.schema import Profile, Side
 
-from . import engine
 from .reader import MAX_BYTES, FileError, read_file
+
+if os.environ.get("RAHSIA_ENGINE") == "standin":  # a test mode on one laptop, and it is not private
+    from . import engine_standin as engine
+else:
+    from . import engine
 
 ROOT = Path(__file__).resolve().parent
 SAMPLES = ROOT.parent / "profile_builder" / "samples"

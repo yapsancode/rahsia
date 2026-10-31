@@ -23,7 +23,7 @@ messy notes -> Gemma 4 (local) -> clean profile (JSON, checked by schema)
 ```
 
 1. **Profile builder.** Gemma 4 turns messy notes (English, Malay or mixed) into a profile. Code checks the JSON against a schema. The person reviews it before it counts.
-2. **Private match check.** A maintained PSI library compares bucketed fields (stage, sector, money range, geography, intent). Each side learns only match or no match.
+2. **Private match check.** The maintained OpenMined PSI library (`openmined.psi` 2.0.6) compares bucketed fields (stage, sector, money range, geography, intent). Each side learns only match or no match. Only after both sides agree does PSI run again to show the shared values. See the limits below.
 3. **Draft and receipt.** After both sides agree, Gemma drafts an intro using only the shared overlap. A signed, time-stamped receipt records what was shared.
 
 Before a match, profile data stays on the laptop: the runner client refuses any host that is not this machine, and it ignores proxy settings. After both sides agree, only the overlap is shared.
@@ -35,8 +35,8 @@ This is a hack-day build. Update this table as parts land.
 | Part | Status |
 |---|---|
 | Profile builder (`profile_builder/`) | In progress |
-| Private match check (PSI) | Not started |
-| Two-role screen (`app/`) | First version, runs on a stand-in match engine |
+| Private match check (PSI) | Works. Tested with two app copies on one laptop. Not yet tested on two laptops |
+| Two-role screen (`app/`) | First version, runs on the PSI engine (a stand-in is kept for testing) |
 | Draft and first-call agenda | First version, not yet scored |
 | Disclosure receipt | Stand-in: hashed, not signed yet |
 | Landing page (`site/`) | Done |
@@ -62,7 +62,39 @@ The app loads Gemma when it starts, which takes about 30 seconds. The left side 
 
 Gemma runs fully on the GPU by default. If the model does not fit, the app falls back to Ollama's own split, which is slower. To turn it off, set `RAHSIA_FULL_GPU=0`.
 
-Each person runs their own copy. To try both sides on one laptop, run a second copy with `--port 8002` and pick the other side. The match step uses a stand-in in `app/engine.py` until the PSI engine is plugged in. **The stand-in is not private**, and the screens say so.
+Each person runs their own copy. To try both sides on one laptop, run a second copy with `--port 8002 --peer 127.0.0.1` and pick the other side.
+
+### Run the real match
+
+The PSI library has no Windows build, so on Windows the maths runs inside WSL. The app starts it for you through a pipe on the same laptop. The network between the two laptops is plain TCP handled by Windows, so WSL networking settings do not matter.
+
+**Set up once per laptop (Windows).** In a WSL terminal:
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh        # or use any Python 3.9 to 3.13 you already have
+~/.local/bin/uv venv --python 3.12 ~/rahsia-psi
+~/.local/bin/uv pip install --python ~/rahsia-psi/bin/python openmined.psi
+```
+
+Python 3.14 has no build of the library yet, so use 3.12 or 3.13. If your PSI environment lives somewhere else, tell the app where: `set RAHSIA_WSL_PYTHON=/home/you/psi-env/bin/python` (and `RAHSIA_WSL_DISTRO=Ubuntu` if Ubuntu is not your default WSL distro). On Linux or macOS, install `openmined.psi` into the same Python that runs the app.
+
+**Run it.** The startup laptop starts first and waits. The investor laptop is told where it is:
+
+```bash
+python -m app --port 8001                          # startup laptop
+python -m app --port 8001 --peer 192.168.1.20      # investor laptop: the startup laptop's address
+```
+
+Both laptops must be on the same network. The startup laptop listens on TCP port 47321 (change it with `--psi-port` on both). Windows asks about the firewall the first time: allow it on a private network. Bring the address with `ipconfig`.
+
+`python -m app --standin` runs the old stand-in on one laptop. **The stand-in is not private**, and the screens say so.
+
+### What the match does and does not protect
+
+- Each side makes one token for every combination of intent, stage, sector, money and geography it accepts. Two profiles share a token only when every field has a value in common. That is the Match rule in `TASKS.md`.
+- PSI runs twice, once each way, so each side works out the answer itself and does not have to trust the other side. On no match, each side learns only "no".
+- No profile value crosses the network in clear before both sides agree. The tests check this.
+- **Limits.** Someone who keeps asking with made-up profiles can narrow down the other side, one yes or no at a time. Each side can see how many tokens the other sent. The connection is not encrypted and the other laptop is not signed in, so use a network you trust. The receipt is hashed, not signed yet. None of this stops idea theft; it reduces early sharing.
 
 ### Profile builder only
 
@@ -99,7 +131,7 @@ The repo uses fake data only. Do not put real people, real pitch decks or real i
 
 | Path | What it is |
 |---|---|
-| `app/` | The six-step app: a local server and the screens. `app/engine.py` is the plug for the match engine |
+| `app/` | The six-step app: a local server and the screens. `app/engine.py` is the PSI match engine, `app/psi_worker.py` runs the library, `app/engine_standin.py` is the old test stand-in |
 | `profile_builder/` | Notes to checked profile JSON, and the intro draft, using Gemma 4 through a local Ollama server |
 | `site/` | Public landing page (Astro, Cloudflare) |
 | `IDEA.md` | The full idea, demo plan, numbers and limits |
