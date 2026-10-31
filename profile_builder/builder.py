@@ -11,7 +11,7 @@ from .prompt import system_prompt, user_prompt
 from .repair import remove_injection, repair
 from .schema import Profile, model_json_schema
 
-DEFAULT_MODEL = "gemma4:e4b"
+DEFAULT_MODEL = "google/gemma-4-12b-qat"
 
 
 @dataclass

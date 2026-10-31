@@ -1,0 +1,15 @@
+Metadata-Version: 2.1
+Name: openmined_psi
+Author: OpenMined
+Home-page: https://github.com/OpenMined/PSI
+License: Apache 2.0
+Description-Content-Type: text/markdown
+Classifier: Programming Language :: Python :: 3
+Classifier: Operating System :: OS Independent
+Classifier: Topic :: Security :: Cryptography
+Requires-Python: >=3.9
+Requires-Dist: protobuf==6.30.2
+Version: 2.0.6
+
+Private Set Intersection protocol based on ECDH and Bloom Filters.
+
