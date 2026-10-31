@@ -12,6 +12,7 @@ from .repair import remove_injection, repair
 from .schema import Profile, model_json_schema
 
 DEFAULT_MODEL = "gemma4:e4b"
+MAX_NOTES_CHARS = 4_000  # the runner has a 4,096-token window and drops text that does not fit, without saying so
 
 
 @dataclass
@@ -49,7 +50,9 @@ def build_profile(notes: str, side: str, model: str = DEFAULT_MODEL, seed: int =
     """One model call, then repair and check in code. No retry on bad output."""
     if side not in ("seeker", "provider"):
         raise ValueError("side must be 'seeker' or 'provider'")
-    clean, injection_warnings = remove_injection(notes)
+    clean, injection_warnings = remove_injection(notes[:MAX_NOTES_CHARS])
+    if len(notes) > MAX_NOTES_CHARS:
+        injection_warnings.append(f"notes: only the first {MAX_NOTES_CHARS} characters were read")
     if not clean.strip():
         return BuildResult(None, warnings=injection_warnings, errors=["the notes are empty"], model=model)
 

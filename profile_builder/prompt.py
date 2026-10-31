@@ -25,7 +25,7 @@ Allowed values:
 - geography: {geographies}
 - currency: {currencies}
 
-Return only JSON that matches the schema."""
+Return only JSON that matches the schema, on one line, with no line breaks."""
 
 
 def system_prompt() -> str:

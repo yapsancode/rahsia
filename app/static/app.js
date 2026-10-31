@@ -19,7 +19,7 @@ const app = { config: null, side: null, profile: null, polling: null, buildTimer
 
 async function api(path, body) {
   const options = body === undefined
-    ? { method: path === '/api/config' || path === '/api/state' ? 'GET' : 'POST' }
+    ? { method: ['/api/config', '/api/state', '/api/gemma'].includes(path) ? 'GET' : 'POST' }
     : { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) };
   let response;
   try {
@@ -77,7 +77,11 @@ function chooseSide(side) {
     link.type = 'button';
     link.className = 'link';
     link.textContent = SAMPLE_NAMES[sample.name] || sample.name;
-    link.addEventListener('click', () => { $('notes').value = sample.text; setError('notes-error'); });
+    link.addEventListener('click', () => {
+      $('notes').value = sample.text;
+      $('notes-hint').textContent = NOTES_HINT;
+      setError('notes-error');
+    });
     samples.append(link);
   });
   $('notes').placeholder = side === 'seeker'
@@ -86,6 +90,44 @@ function chooseSide(side) {
   setStep(1);
   show('notes');
   $('notes').focus();
+}
+
+/* Notes from a file */
+
+const NOTES_HINT = 'Or drop a .txt, .md, .pdf or .docx file on the box.';
+
+function showNotesLength() {
+  const { notes: limit } = app.config.limits;
+  const over = $('notes').value.length > limit;
+  if (over) $('notes-hint').textContent = `This is long. Gemma reads only the first ${limit.toLocaleString('en-GB')} characters, so put the key facts first.`;
+  return over;
+}
+
+async function loadFile(file) {
+  if (!file) return;
+  setError('notes-error');
+  if (file.size > app.config.limits.file_bytes) {
+    setError('notes-error', 'This file is over 5 MB. Copy the part you need into the notes box.');
+    return;
+  }
+  const hint = $('notes-hint');
+  hint.textContent = 'Reading the file…';
+  try {
+    const response = await fetch('/api/read', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/octet-stream', 'X-File-Kind': file.name.split('.').pop() },
+      body: file,
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.detail || 'This file could not be read.');
+    $('notes').value = data.text;
+    hint.textContent = 'File loaded on this laptop. Check the text, then build the profile.';
+    showNotesLength();
+    $('notes').focus();
+  } catch (error) {
+    hint.textContent = NOTES_HINT;
+    setError('notes-error', error.message === 'Failed to fetch' ? 'The app has stopped. Start it again in the terminal.' : error.message);
+  }
 }
 
 /* Notes to profile */
@@ -393,9 +435,12 @@ function showOverlap(overlap) {
 async function writeDraft() {
   const started = performance.now();
   const hint = $('draft-hint');
-  $('draft').value = '';
-  $('draft').readOnly = true;
-  $('draft-box').classList.add('busy');
+  const boxes = [['draft', 'draft-box'], ['agenda', 'agenda-box']];
+  boxes.forEach(([text, box]) => {
+    $(text).value = '';
+    $(text).readOnly = true;
+    $(box).classList.add('busy');
+  });
   $('save-receipt').disabled = true;
   const timer = setInterval(() => {
     hint.textContent = `Gemma is writing… ${((performance.now() - started) / 1000).toFixed(1)}s`;
@@ -403,16 +448,20 @@ async function writeDraft() {
   try {
     const draft = await api('/api/draft');
     $('draft').value = draft.text;
-    hint.textContent = draft.source === 'gemma'
-      ? `Written by Gemma in ${draft.seconds} seconds, then checked in code. You can edit it.`
-      : `Gemma’s draft failed the check, so this one was built from the overlap in code. You can edit it.`;
+    $('agenda').value = draft.agenda.map((point, index) => `${index + 1}. ${point}`).join('\n');
+    const fromGemma = draft.source === 'gemma' && draft.agenda_source === 'gemma';
+    hint.textContent = fromGemma
+      ? `Written by Gemma in ${draft.seconds} seconds, then checked in code. You can edit both.`
+      : 'Part of Gemma’s answer failed the check, so that part was built from the overlap in code. You can edit both.';
   } catch (error) {
     hint.textContent = '';
     setError('share-error', error.message);
   } finally {
     clearInterval(timer);
-    $('draft').readOnly = false;
-    $('draft-box').classList.remove('busy');
+    boxes.forEach(([text, box]) => {
+      $(text).readOnly = false;
+      $(box).classList.remove('busy');
+    });
     $('save-receipt').disabled = false;
   }
 }
@@ -420,13 +469,13 @@ async function writeDraft() {
 async function copyDraft() {
   const label = $('copy-draft');
   try {
-    await navigator.clipboard.writeText($('draft').value);
+    await navigator.clipboard.writeText(`${$('draft').value}\n\nAgenda for the first call\n${$('agenda').value}`);
     label.textContent = 'Copied';
   } catch {
     $('draft').select();
-    label.textContent = 'Press Ctrl+C to copy';
+    label.textContent = 'Press Ctrl+C to copy the draft';
   }
-  setTimeout(() => { label.textContent = 'Copy draft'; }, 2000);
+  setTimeout(() => { label.textContent = 'Copy draft and agenda'; }, 2000);
 }
 
 /* Receipt */
@@ -475,9 +524,24 @@ async function restart() {
   app.profile = null;
   app.shownPhase = null;
   $('notes').value = '';
+  $('notes-hint').textContent = NOTES_HINT;
   setError('notes-error');
   setStep(1);
   show('notes');
+}
+
+const GEMMA_WORDS = { ready: () => `${app.config.model} ready`, loading: () => 'Loading Gemma…', missing: () => 'Gemma is not running' };
+
+async function watchGemma() {
+  let state = 'missing';
+  try {
+    ({ state } = await api('/api/gemma'));
+  } catch {
+    // the page already shows when the app has stopped
+  }
+  $('st-gemma').textContent = GEMMA_WORDS[state]();
+  $('st-gemma').classList.toggle('bad', state === 'missing');
+  setTimeout(watchGemma, state === 'ready' ? 30000 : 2000);
 }
 
 async function start() {
@@ -488,9 +552,8 @@ async function start() {
     $('st-gemma').textContent = error.message;
     return;
   }
-  const { engine, model, gemma_ready: ready } = app.config;
-  $('st-gemma').textContent = ready ? model : 'Gemma is not running';
-  $('st-gemma').classList.toggle('bad', !ready);
+  const { engine } = app.config;
+  watchGemma();
   $('st-engine').textContent = engine.private ? 'Private (PSI)' : 'Stand-in, not private';
   $('st-engine').classList.toggle('bad', !engine.private);
   $('step-match').textContent = matchWords();
@@ -500,7 +563,24 @@ document.querySelectorAll('[data-side]').forEach((card) => {
   card.addEventListener('click', () => { if (app.config) chooseSide(card.dataset.side); });
 });
 $('build').addEventListener('click', buildProfile);
-$('notes').addEventListener('input', () => setError('notes-error'));
+$('notes').addEventListener('input', () => {
+  setError('notes-error');
+  if (!showNotesLength()) $('notes-hint').textContent = NOTES_HINT;
+});
+$('pick-file').addEventListener('click', () => $('file').click());
+$('file').addEventListener('change', () => {
+  loadFile($('file').files[0]);
+  $('file').value = '';
+});
+['dragenter', 'dragover'].forEach((name) => $('scanbox').addEventListener(name, (event) => {
+  event.preventDefault();
+  $('scanbox').classList.add('dragging');
+}));
+['dragleave', 'drop'].forEach((name) => $('scanbox').addEventListener(name, (event) => {
+  event.preventDefault();
+  $('scanbox').classList.remove('dragging');
+}));
+$('scanbox').addEventListener('drop', (event) => loadFile(event.dataTransfer.files[0]));
 $('notes').addEventListener('keydown', (event) => {
   if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) buildProfile();
 });

@@ -37,7 +37,7 @@ This is a hack-day build. Update this table as parts land.
 | Profile builder (`profile_builder/`) | In progress |
 | Private match check (PSI) | Not started |
 | Two-role screen (`app/`) | First version, runs on a stand-in match engine |
-| Draft generator | First version, not yet scored |
+| Draft and first-call agenda | First version, not yet scored |
 | Disclosure receipt | Stand-in: hashed, not signed yet |
 | Landing page (`site/`) | Done |
 
@@ -57,6 +57,10 @@ python -m venv .venv
 pip install -r app/requirements.txt
 python -m app --port 8001 --open
 ```
+
+The app loads Gemma when it starts, which takes about 30 seconds. The left side shows when it is ready. Notes can be typed, or loaded from a text file, `.pdf` or `.docx`. A scanned PDF has no text to read.
+
+Gemma runs fully on the GPU by default. If the model does not fit, the app falls back to Ollama's own split, which is slower. To turn it off, set `RAHSIA_FULL_GPU=0`.
 
 Each person runs their own copy. To try both sides on one laptop, run a second copy with `--port 8002` and pick the other side. The match step uses a stand-in in `app/engine.py` until the PSI engine is plugged in. **The stand-in is not private**, and the screens say so.
 

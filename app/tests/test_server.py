@@ -16,7 +16,7 @@ PROFILE = {"side": "seeker", "intent": "funding", "stage": ["seed"], "sector": [
 def client(tmp_path, monkeypatch):
     monkeypatch.setattr(engine, "_folder", tmp_path)
     monkeypatch.setattr(engine, "RECEIPTS", tmp_path / "receipts")
-    monkeypatch.setattr(server.client, "has_model", lambda model: True)
+    monkeypatch.setattr(server.client, "model_state", lambda model: "ready")
     with TestClient(server.app, base_url="http://127.0.0.1:8001") as test_client:
         test_client.post("/api/reset")
         yield test_client
@@ -43,6 +43,10 @@ def test_config_tells_the_page_the_engine_is_not_private(client):
     assert [s["name"] for s in body["samples"]["provider"]] == ["provider_ms"]
 
 
+def test_the_page_can_ask_if_gemma_is_ready(client):
+    assert client.get("/api/gemma").json() == {"state": "ready"}
+
+
 def test_the_page_is_served(client):
     assert "Who is using this laptop?" in client.get("/").text
 
@@ -53,6 +57,17 @@ def test_profile_comes_back_with_warnings(client, monkeypatch):
     body = client.post("/api/profile", json={"notes": "fake", "side": "seeker"}).json()
     assert body["profile"]["intent"] == "funding"
     assert body["warnings"] == ["a warning"]
+
+
+def test_a_file_comes_back_as_text(client):
+    response = client.post("/api/read", content="kami buat sensor".encode(), headers={"X-File-Kind": "txt"})
+    assert response.json() == {"text": "kami buat sensor"}
+
+
+def test_a_bad_file_gives_a_clear_message(client):
+    response = client.post("/api/read", content=b"MZ\0\0binary", headers={"X-File-Kind": "exe"})
+    assert response.status_code == 422
+    assert "not a text file" in response.json()["detail"]
 
 
 def test_gemma_being_down_gives_a_clear_message(client, monkeypatch):
