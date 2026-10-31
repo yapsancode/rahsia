@@ -1,4 +1,4 @@
-"""Tiny client for a local Ollama server. Refuses any host that is not this laptop."""
+"""Tiny client for a local OpenAI-compatible server. Refuses any host that is not this laptop."""
 import json
 import os
 import urllib.error
@@ -7,7 +7,6 @@ from urllib.parse import urlparse
 
 LOOPBACK = {"localhost", "127.0.0.1", "::1"}
 
-# urlopen would follow HTTP_PROXY and send the notes to the proxy, whatever the URL says.
 _NO_PROXY = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 
 
@@ -16,7 +15,7 @@ class RunnerError(RuntimeError):
 
 
 def runner_url() -> str:
-    host = os.environ.get("OLLAMA_HOST", "127.0.0.1:11434")
+    host = os.environ.get("OLLAMA_HOST", "127.0.0.1:1235")
     if "://" not in host:
         host = "http://" + host
     parsed = urlparse(host)
@@ -25,14 +24,17 @@ def runner_url() -> str:
             f"Refusing to send notes to {parsed.hostname!r}. "
             "Profile data must stay on this laptop (localhost only)."
         )
-    return f"{parsed.scheme}://{parsed.hostname if parsed.hostname != '::1' else '[::1]'}:{parsed.port or 11434}"
+    base = f"{parsed.scheme}://{parsed.hostname if parsed.hostname != '::1' else '[::1]'}:{parsed.port or 1235}"
+    # strip trailing /v1 if already in the env var, then re-add it
+    return base.rstrip("/").removesuffix("/v1")
 
 
 def has_model(model: str) -> bool:
     """True if the local runner is up and has this model. Never raises."""
     try:
-        with _NO_PROXY.open(runner_url() + "/api/tags", timeout=2) as response:
-            names = [m.get("name") for m in json.load(response).get("models", [])]
+        with _NO_PROXY.open(runner_url() + "/v1/models", timeout=2) as response:
+            data = json.load(response)
+            names = [m.get("id") for m in data.get("data", [])]
     except (RunnerError, OSError, ValueError):
         return False
     return model in names
@@ -45,13 +47,12 @@ def chat(model: str, system: str, user: str, schema: dict, seed: int = 0,
         "model": model,
         "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
         "stream": False,
-        "think": False,
-        "keep_alive": "30m",  # a cold start costs about 15 seconds, too close to the 30-second target
-        "format": schema,
-        "options": {"temperature": temperature, "seed": seed},
+        "temperature": temperature,
+        "seed": seed,
+        "response_format": {"type": "json_schema", "json_schema": {"name": "profile", "schema": schema, "strict": True}},
     }
     request = urllib.request.Request(
-        runner_url() + "/api/chat",
+        runner_url() + "/v1/chat/completions",
         data=json.dumps(payload).encode(),
         headers={"Content-Type": "application/json"},
     )
@@ -60,7 +61,7 @@ def chat(model: str, system: str, user: str, schema: dict, seed: int = 0,
             body = json.load(response)
     except urllib.error.HTTPError as error:
         detail = error.read().decode(errors="replace")[:300]
-        raise RunnerError(f"Ollama returned {error.code}: {detail}") from error
+        raise RunnerError(f"Runner returned {error.code}: {detail}") from error
     except (urllib.error.URLError, TimeoutError) as error:
-        raise RunnerError(f"Cannot reach Ollama at {runner_url()}: {error}") from error
-    return body.get("message", {}).get("content", "")
+        raise RunnerError(f"Cannot reach runner at {runner_url()}: {error}") from error
+    return body.get("choices", [{}])[0].get("message", {}).get("content", "")
