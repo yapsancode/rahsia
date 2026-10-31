@@ -1,0 +1,6 @@
+{
+  // Only the built page in dist/ is uploaded. IDEA.md and SPEC.md stay private.
+  "name": "rahsia",
+  "compatibility_date": "2026-10-30",
+  "assets": { "directory": "./dist" }
+}

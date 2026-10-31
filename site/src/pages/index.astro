@@ -1,0 +1,393 @@
+---
+import '../styles/site.css';
+
+const title = 'Rahsia: check the fit, keep the secret';
+const description =
+  'Founders and investors test the fit with Gemma 4 on their own laptops, before either side reveals a plan. A hack day prototype.';
+
+// Seeded so the diagram is the same on every build.
+let seed = 7;
+const rand = () => {
+  seed = (seed * 16807) % 2147483647;
+  return seed / 2147483647;
+};
+
+const W = 1320;
+const H = 300;
+const S = 12;
+const squares = [];
+for (let i = 0; i < 56; i++) {
+  squares.push({ x: rand() * 400, y: rand() * (H - S), fill: i % 3 ? 'var(--pale-1)' : 'var(--pale-2)' });
+}
+for (let col = 0; col < 24; col++) {
+  for (let row = 0; row < 3; row++) {
+    squares.push({ x: 440 + col * 18, y: 126 + row * 18, fill: 'var(--ink)' });
+  }
+}
+for (let col = 0; col < 8; col++) {
+  for (let row = 0; row < 3; row++) {
+    squares.push({ x: 920 + col * 56, y: 66 + row * 72, fill: 'var(--accent)' });
+  }
+}
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://api.fontshare.com" />
+    <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin />
+    <link href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600&display=swap" rel="stylesheet" />
+    <script is:inline>document.documentElement.classList.add('js');</script>
+  </head>
+  <body>
+    <svg class="defs" aria-hidden="true" width="0" height="0">
+      <filter id="ink">
+        <feTurbulence type="fractalNoise" baseFrequency="0.11" numOctaves="2" seed="4" result="noise" />
+        <feColorMatrix in="noise" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -9 6.6" result="wear" />
+        <feComposite in="SourceGraphic" in2="wear" operator="in" />
+      </filter>
+    </svg>
+
+    <header class="hero">
+      <nav class="bar page" aria-label="Main">
+        <a class="wordmark" href="#top" id="top">Rahsia</a>
+        <div class="bar-right">
+          <a href="#how">How it works</a>
+          <a href="#limits">Limits</a>
+          <a class="bar-action" href="#try">Try it</a>
+        </div>
+      </nav>
+
+      <div class="hero-void page">
+        <div class="stamp hero-stamp" role="img" aria-label="A red stamp that reads Rahsia, the Malay word for secret">
+          <span>RAHSIA</span>
+        </div>
+      </div>
+
+      <div class="hero-foot page">
+        <div class="hero-side">
+          <p class="hero-sentence">
+            Founders and investors test the fit first, with Gemma 4 on their own laptops, before either side reveals a
+            plan.
+          </p>
+          <a class="button" href="#try">Try the match check</a>
+          <p class="note">Rahsia is Malay for secret. A prototype being built at Hack Day KL, 31 Oct 2026.</p>
+        </div>
+        <h1>
+          <span class="line"><span>Check the fit.</span></span>
+          <span class="line"><span>Keep the secret.</span></span>
+        </h1>
+      </div>
+    </header>
+
+    <main>
+      <section class="problem page" aria-labelledby="problem-title">
+        <p class="side-note reveal">
+          One question sits under every first pitch: what does the other side really want?
+        </p>
+        <div>
+          <h2 id="problem-title" class="reveal">The first meeting stays shallow</h2>
+          <div class="columns">
+            <div class="reveal">
+              <h3>Hidden agenda</h3>
+              <p>Founders cannot tell if the other side wants to invest, partner, or just hire the team.</p>
+            </div>
+            <div class="reveal">
+              <h3>Fear of sharing</h3>
+              <p>
+                Founders hold back real details. Investors hold back their real budget and focus. Nobody says enough to
+                find out.
+              </p>
+            </div>
+            <div class="reveal">
+              <h3>Noise</h3>
+              <p>Open channels fill with pitches, and good ones get skipped. Founders chase investors who never fit.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="figure" aria-label="A market number">
+        <div class="page">
+          <p class="figure-number reveal">98</p>
+          <div class="figure-text reveal">
+            <p class="statement">equity deals in Southeast Asia in Q1 2026, the lowest count in at least 8 years.</p>
+            <p class="figure-after">When deals are this few, a wasted first meeting costs more.</p>
+            <p class="note">
+              Checked 27 Oct 2026. Source:
+              <a href="https://www.dealstreetasia.com/stories/southeast-asia-deal-review-q1-2026-summary-481038" rel="noopener">DealStreetAsia</a>.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="how page-full" id="how" aria-labelledby="how-title">
+        <div class="how-head">
+          <h2 id="how-title" class="reveal">Messy notes,<br />clear answer</h2>
+          <p class="reveal">
+            Each side works alone on its own laptop. The two laptops talk over a local link, with the internet off.
+          </p>
+        </div>
+        <svg class="how-diagram" viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Scattered squares are pressed into a tight band, then leave as neat red rows.">
+          {squares.map((q, i) => (
+            <rect x={q.x.toFixed(1)} y={q.y.toFixed(1)} width={S} height={S} fill={q.fill} style={`--d:${Math.round(q.x / 2)}ms`} />
+          ))}
+        </svg>
+        <div class="how-steps">
+          <div class="reveal">
+            <h3>Notes</h3>
+            <p>
+              Type messy notes in English, Malay or both. Gemma 4 turns them into a clean profile on your laptop, and
+              you review it.
+            </p>
+          </div>
+          <div class="reveal">
+            <h3>Buckets</h3>
+            <p>
+              Stage, sector and money become fixed choices. The plan: a private set intersection from a maintained
+              library compares them.
+            </p>
+          </div>
+          <div class="reveal">
+            <h3>Match</h3>
+            <p>
+              No fit: each side sees only "no match". Fit: both agree, the overlap opens, and Gemma 4 drafts the intro.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="made" aria-labelledby="made-title">
+        <div class="page made-head">
+          <p class="side-note reveal">Fake sample data, written by hand to show the shape of each step.</p>
+          <h2 id="made-title" class="reveal">What the laptop makes</h2>
+        </div>
+        <div class="mosaic">
+          <figure class="tile tile-paper reveal" data-ui>
+            <figcaption>Your messy notes</figcaption>
+            <p class="handwriting">
+              kami agritech, pre-seed lagi. nak cari RM300-600k. Malaysia dulu then Indonesia. decide dalam 3 bulan. no
+              acqui-hire please
+            </p>
+          </figure>
+          <figure class="tile tile-black reveal" data-ui>
+            <figcaption>Clean profile, checked by schema</figcaption>
+            <pre><code>{`{
+  "intent": "funding",
+  "stage": "pre-seed",
+  "sector": "agritech",
+  "money_rm": "300k-600k",
+  "geography": ["MY", "ID"],
+  "deal_breakers": ["acqui-hire"]
+}`}</code></pre>
+          </figure>
+          <figure class="tile tile-grey reveal" data-ui>
+            <figcaption>Draft intro, from the overlap only</figcaption>
+            <p>
+              Hello, we are a pre-seed agritech team raising in the RM 300k to 600k range. Your focus overlaps with
+              ours on stage, sector and range. Could we talk this month?
+            </p>
+          </figure>
+          <figure class="tile tile-paper reveal" data-ui>
+            <figcaption>Disclosure receipt</figcaption>
+            <table class="receipt">
+              <tbody>
+                <tr><th scope="row">Shared</th><td>stage, sector, money range</td></tr>
+                <tr><th scope="row">With</th><td>Provider B (sample)</td></tr>
+                <tr><th scope="row">When</th><td>31 Oct 2026, 14:02 (sample)</td></tr>
+                <tr><th scope="row">Stored</th><td>your laptop, signed</td></tr>
+              </tbody>
+            </table>
+            <p class="note">Evidence of what was shared, not a legal contract.</p>
+          </figure>
+        </div>
+      </section>
+
+      <section class="try" id="try" aria-labelledby="try-title">
+        <div class="try-plate">
+          <div class="plate reveal" data-ui aria-live="polite">
+            <p class="plate-title">Result on both laptops</p>
+            <div class="stamp plate-stamp" id="verdict"><span id="verdict-text">NO MATCH</span></div>
+            <dl class="plate-facts">
+              <div><dt>Seeker learned</dt><dd id="seeker-learned">No match</dd></div>
+              <div><dt>Provider learned</dt><dd id="provider-learned">No match</dd></div>
+              <div><dt>Fields shown to the other side</dt><dd id="fields-shown">0</dd></div>
+            </dl>
+            <p class="plate-overlap" id="overlap" hidden></p>
+          </div>
+        </div>
+
+        <div class="try-panel">
+          <div class="tabs" role="tablist" aria-label="Choose a side">
+            <button type="button" role="tab" id="tab-seeker" aria-selected="true" aria-controls="panel-seeker">Seeker</button>
+            <button type="button" role="tab" id="tab-provider" aria-selected="false" aria-controls="panel-provider">Provider</button>
+          </div>
+
+          <div class="try-copy">
+            <h2 id="try-title">Try one side at a time</h2>
+            <p>
+              Set the seeker, then switch to the provider. You only see one side, as on the real laptops. Try making the
+              sectors meet.
+            </p>
+          </div>
+
+          <form id="check" class="try-form">
+            <fieldset id="panel-seeker" role="tabpanel" aria-labelledby="tab-seeker">
+              <legend class="sr">Seeker profile</legend>
+              <label>Stage
+                <select name="s-stage">
+                  <option value="pre" selected>Pre-seed</option>
+                  <option value="seed">Seed</option>
+                  <option value="a">Series A</option>
+                </select>
+              </label>
+              <label>Sector
+                <select name="s-sector">
+                  <option value="agritech" selected>Agritech</option>
+                  <option value="logistics">Logistics</option>
+                  <option value="fintech">Fintech</option>
+                </select>
+              </label>
+              <label>Asking
+                <select name="s-money">
+                  <option value="b1">RM 100k to 300k</option>
+                  <option value="b2" selected>RM 300k to 600k</option>
+                  <option value="b3">RM 600k to 1m</option>
+                </select>
+              </label>
+            </fieldset>
+
+            <fieldset id="panel-provider" role="tabpanel" aria-labelledby="tab-provider" hidden>
+              <legend class="sr">Provider profile</legend>
+              <label>Stage
+                <select name="p-stage">
+                  <option value="pre,seed" selected>Pre-seed to seed</option>
+                  <option value="seed,a">Seed to Series A</option>
+                </select>
+              </label>
+              <label>Sector
+                <select name="p-sector">
+                  <option value="agritech,logistics">Agritech, logistics</option>
+                  <option value="fintech" selected>Fintech</option>
+                </select>
+              </label>
+              <label>Cheque
+                <select name="p-money">
+                  <option value="b1">RM 50k to 200k</option>
+                  <option value="b1,b2" selected>RM 200k to 500k</option>
+                  <option value="b2,b3">RM 500k to 1m</option>
+                </select>
+              </label>
+            </fieldset>
+          </form>
+
+          <noscript><p class="note">This small demo needs JavaScript. The rest of the page does not.</p></noscript>
+
+          <div class="cells">
+            <button type="button" class="cell cell-ink" id="open" disabled>Both agree: open overlap</button>
+            <button type="button" class="cell cell-tone" id="reset">Reset</button>
+          </div>
+
+          <p class="note">
+            A sketch of the idea with fake choices, run only in your browser. It is not the real private check, and
+            nothing you pick is sent anywhere.
+          </p>
+        </div>
+      </section>
+
+      <section class="proof page-full" id="numbers" aria-labelledby="proof-title">
+        <h2 id="proof-title" class="stepped reveal"><span>Targets,</span> <span>not results</span></h2>
+        <p class="proof-intro reveal">
+          We wrote these pass rules before running anything. The answer key is written by hand first. If we miss, we
+          report the real number.
+        </p>
+        <table class="proof-table reveal">
+          <thead>
+            <tr><th scope="col">Measure</th><th scope="col">How</th><th scope="col">Target</th><th scope="col">Result</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Match accuracy</td><td>30 fake pairs against a hand-written answer</td><td>At least 90%</td><td>Not measured</td></tr>
+            <tr><td>Leakage</td><td>Fields learned when the answer is no match</td><td>0 fields</td><td>Not measured</td></tr>
+            <tr><td>Profile quality</td><td>20 messy notes in English, Malay and mixed</td><td>At least 85% correct</td><td>Not measured</td></tr>
+            <tr><td>Invented facts</td><td>Facts in the draft that were not in the overlap</td><td>0</td><td>Not measured</td></tr>
+            <tr><td>Speed</td><td>Seconds from notes to profile, and to draft</td><td>Under 30 seconds</td><td>Not measured</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="limits" id="limits" aria-labelledby="limits-title">
+        <div class="band band-head">
+          <h2 id="limits-title">What it does not do</h2>
+        </div>
+        <div class="band">
+          <h3>Does it stop idea theft?</h3>
+          <p>No. It reduces what you share early, and it records what was shared.</p>
+        </div>
+        <div class="band band-alt">
+          <h3>How strong is the privacy?</h3>
+          <p>The hack day version is demo level, not bank-grade. The plan is a maintained PSI library, with no custom cryptography.</p>
+        </div>
+        <div class="band">
+          <h3>Why not use a cloud AI API?</h3>
+          <p>Then your plan and budget would leave the laptop. Open weights let Gemma 4 build the profile and run the match locally.</p>
+        </div>
+        <div class="band band-alt">
+          <h3>What happens after a match?</h3>
+          <p>The other side knows what was shared, and we cannot take that back. Money is compared as ranges, not exact numbers.</p>
+        </div>
+        <div class="band">
+          <h3>Is the receipt a contract?</h3>
+          <p>No. It is evidence. A real dispute still needs a lawyer.</p>
+        </div>
+        <div class="band band-alt">
+          <h3>Can the model be wrong?</h3>
+          <p>Yes. A small local model can misread messy notes, so you review your profile before it is used.</p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="foot">
+      <div class="foot-cols">
+        <div>
+          <p class="foot-first">Rahsia</p>
+          <p>Malay for secret</p>
+          <p>Prototype, not a product</p>
+        </div>
+        <div>
+          <p class="foot-first">On this page</p>
+          <p><a href="#how">How it works</a></p>
+          <p><a href="#try">Try it</a></p>
+          <p><a href="#numbers">Targets</a></p>
+          <p><a href="#limits">Limits</a></p>
+        </div>
+        <div>
+          <p class="foot-first">Planned stack</p>
+          <p>Gemma 4, open weights</p>
+          <p>A local model runner</p>
+          <p>A maintained PSI library</p>
+        </div>
+        <div>
+          <p class="foot-first">Made at</p>
+          <p><a href="https://hacktoberfest.krackeddevs.com" rel="noopener">Hack Day KL</a></p>
+          <p>31 Oct 2026</p>
+          <p>Startup ASEAN, Problem 1</p>
+        </div>
+      </div>
+      <div class="foot-bottom">
+        <svg class="foot-word" viewBox="0 0 1000 250" role="img" aria-label="Rahsia">
+          <text x="500" y="222" text-anchor="middle" textLength="1000" lengthAdjust="spacingAndGlyphs">Rahsia</text>
+        </svg>
+        <p class="foot-legal">All examples on this page are fake sample data.</p>
+      </div>
+    </footer>
+
+    <script src="../scripts/site.js"></script>
+  </body>
+</html>

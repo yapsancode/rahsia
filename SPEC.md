@@ -37,3 +37,4 @@
 - 2026-10-29: pick Startup ASEAN Problem 1 (outcome conversion) — private first contact is where connections fail.
 - 2026-10-29: never claim it stops idea theft — it reduces early sharing and records what was shared.
 - 2026-10-29: use a maintained PSI library, no custom cryptography — hashing small tag lists is not private.
+- 2026-10-31: public landing page in `site/` (Astro 6, static, Cloudflare Worker named `rahsia`). Isyraf asked for it, chose Astro, and confirmed code before the sprint was allowed. This choice is for the page only; the app stack is still open. Astro 6 because Astro 7 needs Node 22.23+.

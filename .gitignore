@@ -6,6 +6,10 @@
 receipts/
 models/
 node_modules/
+dist/
+.astro/
+.wrangler/
+.taste-skill/
 __pycache__/
 *.pyc
 .venv/
