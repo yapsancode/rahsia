@@ -3,7 +3,7 @@
 Private matchmaking for startups and investors on local Gemma 4. Idea stage. Read IDEA.md and SPEC.md before any work. Work only on the current phase in SPEC.md.
 
 ## Stack
-Docs only until the hack day. Planned: Gemma 4 (E4B, 12B) through a local runner, a maintained PSI library, a small local web UI. Nothing is chosen yet; do not pick a stack without asking.
+Chosen (2026-10-31): profile builder in Python 3.11 with pydantic, Gemma 4 E4B through Ollama on localhost (`profile_builder/`, venv in `.venv/`, tests with `pytest`). Still open: PSI library, web UI, 12B model. Do not pick those without asking.
 
 ## Claims (strict)
 - Never write or say that Rahsia stops idea theft. It reduces early sharing and records what was shared.
