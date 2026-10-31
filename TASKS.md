@@ -204,9 +204,10 @@ You make sure we can submit and that the pitch is honest. You need a phone and a
 
 ### Part 1: Ask the organisers (start now)
 
-- [ ] Ask: can our team stay together as it is?
+- [ ] Ask: can our team stay together as it is? (The organiser pack says a pre-formed team is fine. Confirm at the desk. Going solo is a disqualification.)
 - [ ] Ask: can we use code written before today? Tell them about our landing page in `site/`.
-- [ ] Ask: what must the submission include, and where do we submit it?
+- [ ] Ask: what must the submission include, and where do we submit it? (Pack answer: MLH OrganizerHQ by 15:00. See Part 5 for the list.)
+- [ ] Create your MLH OrganizerHQ account now, with the email you registered with, so submitting is not rushed later.
 - [ ] Send all the answers to Isyraf straight away.
 
 ### Part 2: Talk to people at the venue (11:30 to 12:30)
@@ -227,7 +228,7 @@ Try to speak to 5 people, who can be founders, investors or accelerator staff. D
 
 ### Part 4: Build the slides (12:45 to 14:00)
 
-Follow the 5-minute plan in IDEA.md section 7.
+The organiser pack says each finalist gets a **4-minute demo and 3 minutes of Q&A**. IDEA.md section 7 is a 5-minute plan, so cut about one minute. Drop the 4:45 "what we do next" beat into Slide 6 and shorten the story.
 
 - [ ] Slide 1: the story: "We pitched, and never knew their real agenda." Add one checked number.
 - [ ] Slide 2: the problem we chose: Startup ASEAN Problem 1, outcome conversion.
@@ -243,9 +244,12 @@ You can use these numbers, which were checked on 2026-10-27 and listed in IDEA.m
 
 - [ ] Write a demo script with who speaks, who clicks and what happens at each time.
 - [ ] Add the real numbers to Slide 4 at 14:15.
-- [ ] Run the full 5-minute rehearsal with a timer at 14:15.
+- [ ] Run the full 4-minute rehearsal with a timer at 14:15.
 - [ ] Prepare a backup: screenshots or a screen recording in case the live demo fails.
-- [ ] Fill in the submission with Isyraf and submit by 14:45.
+- [ ] Record the pitch video, **3 minutes or less**: the problem, the solution, the project working, and what is unique. Render it by 14:30 and upload it to YouTube or Vimeo as **public**. This is a separate cut from the live demo.
+- [ ] Fill in the project description with Isyraf: the problem statement, the problem, the solution, how it works, the tools used, the target users, and what is unique.
+- [ ] Submit on MLH OrganizerHQ by 14:45 with the public repo link, the video link, the description and the local run steps. The deadline is 15:00 and it is firm. The Wi-Fi will be busy, so do not wait.
+- [ ] Optional after submitting: post the project on KrackedDevs Showcase (the pack says an extra $5 per project).
 
 ## Checkpoints
 
@@ -260,5 +264,6 @@ At each time, the owner shows the result to the team. If something is late, tell
 | 12:45 | New teammate 1 | Demo notes sent. |
 | 13:00 | Experienced teammate | PSI works, or the team uses the fallback. |
 | 13:30 | Isyraf and experienced teammate | Full flow works from start to end. Second merge to `main`. |
-| 14:15 | Everyone | No new features. Real numbers are in. Full rehearsal. |
+| 14:15 | Everyone | No new features. Real numbers are in. Full 4-minute rehearsal. |
+| 14:30 | New teammate 2 | Pitch video (3 minutes or less) rendered and uploaded as public. |
 | 14:45 | New teammate 2 and Isyraf | Submitted. |
