@@ -1,4 +1,4 @@
-"""Command line: python -m profile_builder --role seeker --file notes.txt
+"""Command line: python -m profile_builder --side seeker --file notes.txt
 
 The person reviews the profile before it counts as `reviewed`.
 """
@@ -13,7 +13,7 @@ from .client import RunnerError
 
 def main() -> int:
     parser = argparse.ArgumentParser(prog="profile_builder", description=__doc__)
-    parser.add_argument("--role", required=True, choices=["seeker", "provider"])
+    parser.add_argument("--side", required=True, choices=["seeker", "provider"])
     parser.add_argument("--file", help="notes file (UTF-8). Reads standard input if missing.")
     parser.add_argument("--model", default=DEFAULT_MODEL)
     parser.add_argument("--out", help="write the profile JSON here (fake data only in this repo)")
@@ -25,8 +25,8 @@ def main() -> int:
 
     notes = Path(args.file).read_text(encoding="utf-8") if args.file else sys.stdin.read()
     try:
-        first = build_profile(notes, args.role, args.model, seed=0, temperature=args.temperature)
-        second = build_profile(notes, args.role, args.model, seed=1, temperature=args.temperature) \
+        first = build_profile(notes, args.side, args.model, seed=0, temperature=args.temperature)
+        second = build_profile(notes, args.side, args.model, seed=1, temperature=args.temperature) \
             if args.twice else None
     except RunnerError as error:
         print(f"Error: {error}", file=sys.stderr)

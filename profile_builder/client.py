@@ -7,6 +7,9 @@ from urllib.parse import urlparse
 
 LOOPBACK = {"localhost", "127.0.0.1", "::1"}
 
+# urlopen would follow HTTP_PROXY and send the notes to the proxy, whatever the URL says.
+_NO_PROXY = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+
 
 class RunnerError(RuntimeError):
     pass
@@ -33,6 +36,7 @@ def chat(model: str, system: str, user: str, schema: dict, seed: int = 0,
         "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
         "stream": False,
         "think": False,
+        "keep_alive": "30m",  # a cold start costs about 15 seconds, too close to the 30-second target
         "format": schema,
         "options": {"temperature": temperature, "seed": seed},
     }
@@ -42,7 +46,7 @@ def chat(model: str, system: str, user: str, schema: dict, seed: int = 0,
         headers={"Content-Type": "application/json"},
     )
     try:
-        with urllib.request.urlopen(request, timeout=timeout) as response:
+        with _NO_PROXY.open(request, timeout=timeout) as response:
             body = json.load(response)
     except urllib.error.HTTPError as error:
         detail = error.read().decode(errors="replace")[:300]

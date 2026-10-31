@@ -6,5 +6,5 @@ These are **not** the answer key. The 20-note test set and its hand-written answ
 (SPEC.md Phase 1) must be written before any scored run.
 
 ```
-python -m profile_builder --role seeker --file profile_builder/samples/seeker_en.txt
+python -m profile_builder --side seeker --file profile_builder/samples/seeker_en.txt
 ```

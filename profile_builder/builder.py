@@ -8,7 +8,7 @@ from pydantic import ValidationError
 
 from . import client
 from .prompt import system_prompt, user_prompt
-from .repair import repair
+from .repair import remove_injection, repair
 from .schema import Profile, model_json_schema
 
 DEFAULT_MODEL = "gemma4:e4b"
@@ -44,26 +44,28 @@ def _parse_json(text: str) -> dict | None:
     return None
 
 
-def build_profile(notes: str, role: str, model: str = DEFAULT_MODEL, seed: int = 0,
+def build_profile(notes: str, side: str, model: str = DEFAULT_MODEL, seed: int = 0,
                   temperature: float = 0.0) -> BuildResult:
     """One model call, then repair and check in code. No retry on bad output."""
-    if role not in ("seeker", "provider"):
-        raise ValueError("role must be 'seeker' or 'provider'")
-    if not notes.strip():
-        return BuildResult(None, errors=["the notes are empty"], model=model)
+    if side not in ("seeker", "provider"):
+        raise ValueError("side must be 'seeker' or 'provider'")
+    clean, injection_warnings = remove_injection(notes)
+    if not clean.strip():
+        return BuildResult(None, warnings=injection_warnings, errors=["the notes are empty"], model=model)
 
     started = time.perf_counter()
-    raw = client.chat(model, system_prompt(), user_prompt(notes, role),
+    raw = client.chat(model, system_prompt(), user_prompt(clean, side),
                       model_json_schema(), seed=seed, temperature=temperature)
-    result = BuildResult(None, model=model, raw=raw)
+    result = BuildResult(None, warnings=injection_warnings, model=model, raw=raw)
 
     data = _parse_json(raw)
     if data is None:
         result.errors.append("the model did not return a JSON object")
     else:
-        fixed, result.warnings = repair(data, role, notes)
+        fixed, repair_warnings = repair(data, side, clean)
+        result.warnings = injection_warnings + repair_warnings
         try:
-            result.profile = Profile(role=role, **fixed)
+            result.profile = Profile(side=side, **fixed)
         except ValidationError as error:
             result.errors.extend(f"{'.'.join(map(str, e['loc']))}: {e['msg']}" for e in error.errors())
     result.seconds = round(time.perf_counter() - started, 2)

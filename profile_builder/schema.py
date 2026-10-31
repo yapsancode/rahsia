@@ -1,47 +1,42 @@
-"""Profile schema. The model fills `Extracted`; code adds `role` and `reviewed`.
+"""Profile schema, matching the Shared fields in TASKS.md.
 
-Every field is a fixed choice or a number so the matching step can compare
-profiles later. Free text is limited to `deal_breakers`, which is shown to a
-human and is not meant for matching.
+The model fills `Extracted`. Code then builds `Profile`, the JSON the match
+check reads. Exact amounts stay in `Extracted`; `Profile` holds only money
+buckets. Blank means null, an empty list or empty text, depending on the field.
 """
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-Role = Literal["seeker", "provider"]
+Side = Literal["seeker", "provider"]
 
-SEEKER_INTENTS = ("funding", "partner", "mentor", "programme")
-PROVIDER_INTENTS = ("invest", "partner", "hire_team")
+SEEKER_INTENTS = ("funding", "partner", "mentor")
+PROVIDER_INTENTS = ("invest", "partner", "mentor", "hire_team")
 INTENTS = tuple(dict.fromkeys(SEEKER_INTENTS + PROVIDER_INTENTS))
-STAGES = ("idea", "pre_seed", "seed", "series_a", "growth")
-SECTORS = (
-    "agritech", "fintech", "logistics", "healthtech", "edtech", "cleantech",
-    "ecommerce", "saas", "deeptech", "other",
-)
-GEOGRAPHIES = ("MY", "SG", "ID", "TH", "VN", "PH", "other_asean", "global")
-DISCLOSURE_LEVELS = ("after_match", "after_nda", "open")
+STAGES = ("idea", "pre-seed", "seed", "series-a")
+SECTORS = ("agritech", "fintech", "logistics", "healthtech", "edtech", "other")
+MONEY_BUCKETS = ("under-100k", "100k-250k", "250k-500k", "500k-1m", "over-1m")
+MONEY_EDGES = (100_000, 250_000, 500_000, 1_000_000)  # upper edge of each bucket but the last
+GEOGRAPHIES = ("malaysia", "singapore", "indonesia", "thailand", "vietnam", "philippines", "other-asean")
 CURRENCIES = ("MYR", "SGD", "USD", "IDR", "other")
-LANGUAGES = ("en", "ms", "mixed")
 
-MAX_DEAL_BREAKERS = 5
-MAX_DEAL_BREAKER_CHARS = 80
+MAX_TEXT_CHARS = 120
 MAX_MONEY = 10_000_000_000
 
 Intent = Literal[INTENTS]
 Stage = Literal[STAGES]
 Sector = Literal[SECTORS]
+Money = Literal[MONEY_BUCKETS]
 Geography = Literal[GEOGRAPHIES]
-Disclosure = Literal[DISCLOSURE_LEVELS]
 Currency = Literal[CURRENCIES]
-Language = Literal[LANGUAGES]
 
 
 class Extracted(BaseModel):
-    """What the model is asked to return. Unknown means null or an empty list."""
+    """What the model is asked to return. Unknown means null, an empty list or empty text."""
 
     model_config = ConfigDict(extra="forbid")
 
-    intent: list[Intent] = Field(default_factory=list)
+    intent: Intent | None = None
     stage: list[Stage] = Field(default_factory=list)
     sector: list[Sector] = Field(default_factory=list)
     money_min: int | None = Field(None, ge=0, le=MAX_MONEY)
@@ -49,32 +44,31 @@ class Extracted(BaseModel):
     currency: Currency | None = None
     geography: list[Geography] = Field(default_factory=list)
     timeline_months: int | None = Field(None, ge=1, le=60)
-    deal_breakers: list[str] = Field(default_factory=list, max_length=MAX_DEAL_BREAKERS)
-    disclosure_level: Disclosure | None = None
-    language: Language = "en"
-
-    @model_validator(mode="after")
-    def _check_consistency(self):
-        if self.money_min is not None and self.money_max is not None and self.money_min > self.money_max:
-            raise ValueError("money_min is larger than money_max")
-        if (self.money_min is not None or self.money_max is not None) and self.currency is None:
-            raise ValueError("an amount needs a currency")
-        for text in self.deal_breakers:
-            if not text.strip() or len(text) > MAX_DEAL_BREAKER_CHARS:
-                raise ValueError("deal_breakers must be short, non-empty phrases")
-        return self
+    deal_breakers: str = ""
+    disclosure: str = ""
 
 
-class Profile(Extracted):
-    role: Role
+class Profile(BaseModel):
+    """The shared profile. `reviewed` is the one extra field: the person confirmed it."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    side: Side
+    intent: Intent | None = None
+    stage: list[Stage] = Field(default_factory=list)
+    sector: list[Sector] = Field(default_factory=list)
+    money_rm: list[Money] = Field(default_factory=list)
+    geography: list[Geography] = Field(default_factory=list)
+    timeline_months: int | None = Field(None, ge=1, le=60)
+    deal_breakers: str = Field("", max_length=MAX_TEXT_CHARS)
+    disclosure: str = Field("", max_length=MAX_TEXT_CHARS)
     reviewed: bool = False  # becomes true only after the person confirms it
 
     @model_validator(mode="after")
-    def _check_intent_for_role(self):
-        allowed = SEEKER_INTENTS if self.role == "seeker" else PROVIDER_INTENTS
-        bad = [i for i in self.intent if i not in allowed]
-        if bad:
-            raise ValueError(f"intent {bad} is not valid for a {self.role}")
+    def _check_intent_for_side(self):
+        allowed = SEEKER_INTENTS if self.side == "seeker" else PROVIDER_INTENTS
+        if self.intent is not None and self.intent not in allowed:
+            raise ValueError(f"intent {self.intent!r} is not valid for a {self.side}")
         return self
 
 

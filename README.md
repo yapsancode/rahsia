@@ -26,7 +26,7 @@ messy notes -> Gemma 4 (local) -> clean profile (JSON, checked by schema)
 2. **Private match check.** A maintained PSI library compares bucketed fields (stage, sector, money range, geography, intent). Each side learns only match or no match.
 3. **Draft and receipt.** After both sides agree, Gemma drafts an intro using only the shared overlap. A signed, time-stamped receipt records what was shared.
 
-Profile data never leaves the laptop. The runner client refuses any host that is not this machine.
+Before a match, profile data stays on the laptop: the runner client refuses any host that is not this machine, and it ignores proxy settings. After both sides agree, only the overlap is shared.
 
 ## Status
 
@@ -47,7 +47,7 @@ This is a hack-day build. Update this table as parts land.
 
 - Python 3.11 or newer
 - [Ollama](https://ollama.com) running on the same laptop
-- Gemma 4 E4B pulled once: `ollama pull gemma4:e4b` (about 4.5 GB, download before the event)
+- Gemma 4 E4B pulled once: `ollama pull gemma4:e4b` (6.6 GB on disk, download before the event)
 
 ### Profile builder
 
@@ -55,17 +55,19 @@ This is a hack-day build. Update this table as parts land.
 python -m venv .venv
 .venv\Scripts\activate          # Windows. On macOS or Linux: source .venv/bin/activate
 pip install -r profile_builder/requirements.txt
-python -m profile_builder --role seeker --file notes.txt --out profile.json
+python -m profile_builder --side seeker --file notes.txt --out profile.json
 ```
+
+The output uses the Shared fields in [TASKS.md](TASKS.md), plus `reviewed`. Exact amounts become `money_rm` buckets, so the profile does not hold them.
 
 Useful options:
 
-- `--role seeker|provider` is required.
+- `--side seeker|provider` is required.
 - `--twice` runs the model two times and shows where it disagrees with itself.
 - `--model` picks another Ollama model (default `gemma4:e4b`).
 - `--yes` marks the profile as reviewed without asking.
 
-Run the tests with `pytest profile_builder/tests`.
+Run the tests with `python -m pytest profile_builder/tests`.
 
 The repo uses fake data only. Do not put real people, real pitch decks or real investor data in it.
 

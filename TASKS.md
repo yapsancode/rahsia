@@ -150,9 +150,12 @@ You build everything that happens after a clean profile exists. Your input is th
   "geography": ["malaysia", "indonesia"],
   "timeline_months": 3,
   "deal_breakers": "no acquihire",
-  "disclosure": "deck only after match"
+  "disclosure": "deck only after match",
+  "reviewed": true
 }
 ```
+
+In the JSON, a blank field is `null` for `intent` and `timeline_months`, `[]` for lists, and `""` for `deal_breakers` and `disclosure`. `reviewed` is true only after the person confirms their profile, so do not match on a profile where it is false.
 
 ### Part 1: Decide with Isyraf (11:00 to 11:20)
 
